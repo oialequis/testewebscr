@@ -26,7 +26,7 @@ def initialize_webdriver():
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--no-sandbox")
-    service = Service(ChromeDriverManager().install())  # Removendo o argumento 'version'
+    service = Service(ChromeDriverManager(chrome_driver_version).install())  # Removendo o argumento 'version'
     driver = webdriver.Chrome(service=service, options=chrome_options)
     return driver
 
