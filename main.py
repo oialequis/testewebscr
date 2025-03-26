@@ -26,7 +26,7 @@ def initialize_webdriver():
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--no-sandbox")
-    service = Service(ChromeDriverManager(chrome_driver_version).install())  # Removendo o argumento 'version'
+    service = Service(ChromeDriverManager().install())  # Removendo o argumento 'version'
     driver = webdriver.Chrome(service=service, options=chrome_options)
     return driver
 
@@ -37,7 +37,7 @@ def get_element_by_xpath(driver, url, xpath):
         element = driver.find_element(By.XPATH, xpath)
         return element.text
     except Exception as e:
-        return f"Erro ao encontrar o elemento: {e}"
+        raise  # Re-levanta a exceção para ser capturada no loop principal
 
 # Função para escrever no arquivo de log
 def write_to_log(content):
@@ -69,21 +69,38 @@ st.info("O arquivo log.txt será enviado para o Dropbox.")
 if url and xpath:
     st.success("Monitoramento iniciado. Verifique o log.txt local e o Dropbox.")
 
-    # Inicializar o WebDriver fora do loop
-    driver = initialize_webdriver()
+    driver = initialize_webdriver()  # Inicializa o driver fora do loop
 
     while True:
-        content = get_element_by_xpath(driver, url, xpath)
-        write_to_log(content)
-        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Conteúdo coletado: {content}")
+        try:
+            content = get_element_by_xpath(driver, url, xpath)
+            write_to_log(content)
+            print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Conteúdo coletado: {content}")
 
-        # Enviar o arquivo para o Dropbox a cada minuto (opcional, ajuste conforme necessário)
-        if time.time() % 60 < 10:  # Envia nos primeiros 10 segundos de cada minuto
-            upload_to_dropbox()
+            # Enviar o arquivo para o Dropbox a cada minuto (opcional, ajuste conforme necessário)
+            if time.time() % 60 < 10:  # Envia nos primeiros 10 segundos de cada minuto
+                upload_to_dropbox()
 
-        time.sleep(10)
+            time.sleep(10)
+
+        except Exception as e:
+            print(f"Erro durante a execução: {e}")
+            if 'invalid session id' in str(e):
+                print("Reinicializando o WebDriver...")
+                try:
+                    driver.quit()  # Tenta fechar o driver antigo
+                except:
+                    pass  # Ignora erros ao tentar fechar um driver já inválido
+                driver = initialize_webdriver()  # Inicializa um novo driver
+                print("WebDriver reinicializado.")
+            else:
+                print("Erro não relacionado à sessão, tentando novamente em 10 segundos.")
+            time.sleep(10)
 
     # Certifique-se de fechar o driver ao finalizar (isso pode não ser alcançado em execução contínua no Streamlit)
-    driver.quit()
+    try:
+        driver.quit()
+    except:
+        pass
 else:
     st.warning("Por favor, insira uma URL e um XPath válidos para iniciar o monitoramento.")
