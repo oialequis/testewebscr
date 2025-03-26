@@ -58,7 +58,7 @@ def upload_to_dropbox():
 st.title("Streamlit + Selenium: Monitoramento Contínuo")
 
 # Entrada de URL
-url = st.text_input("Digite a URL da página a ser monitorada:")
+url = st.text_input("Digite a URL da página a ser monitorad a:")
 
 # Entrada de XPath
 xpath = st.text_input("Digite o XPath do elemento a ser monitorado:")
