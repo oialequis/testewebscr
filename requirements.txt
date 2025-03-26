@@ -1,3 +1,4 @@
 streamlit
 selenium
 dropbox
+webdriver-manager
