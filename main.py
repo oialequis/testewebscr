@@ -5,6 +5,9 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
 
+
+chrome_driver_version = '120.0.6099.183'  # Versão compatível com o Chromium 120
+
 # Função para inicializar o Selenium WebDriver e pegar o conteúdo do elemento
 def get_element_by_xpath(url, xpath):
     # Configurar as opções do Chrome
@@ -14,7 +17,7 @@ def get_element_by_xpath(url, xpath):
     chrome_options.add_argument("--no-sandbox")
 
     # Inicializar o WebDriver do Chrome
-    service = Service(ChromeDriverManager().install())
+    service = Service(ChromeDriverManager(chrome_driver_version).install())
     driver = webdriver.Chrome(service=service, options=chrome_options)
 
     try:
