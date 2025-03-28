@@ -32,16 +32,6 @@ chrome_options.add_argument("--no-sandbox")
 service = Service(ChromeDriverManager(chrome_driver_version).install())  # Removendo o argumento 'version'
 driver = webdriver.Chrome(service=service, options=chrome_options)
 
-try:
-    driver.get("https://www.mice.com")
-    texto_capturado = driver.find_element(By.XPATH,'//*[@id="header-slogan"]')
-
-except Exception as e:
-    print(e)
-
-
-with open(LOG_FILE_PATH, 'a') as f:
-    f.write(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] {texto_capturado}\n")
 
 # Função para enviar o arquivo para o Dropbox
 def upload_to_dropbox():
