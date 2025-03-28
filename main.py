@@ -7,6 +7,10 @@ from webdriver_manager.chrome import ChromeDriverManager
 import dropbox
 import time
 import os
+import sys
+
+
+sys.stdout = sys.__stdout__
 
 # Variáveis de ambiente
 REFRESH_TOKEN = st.secrets["REFRESH_TOKEN"]
