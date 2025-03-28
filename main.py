@@ -72,4 +72,8 @@ while True:
                 driver = inicializar_web_driver()
             time.sleep(10)
 
-    
+# Certifique-se de fechar o driver ao finalizar (isso pode não ser alcançado em execução contínua no Streamlit)
+try:
+    driver.quit()
+except:
+    pass
