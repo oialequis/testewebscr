@@ -16,33 +16,28 @@ DROPBOX_PATH = '/logs/log.txt'  # Caminho onde o arquivo será salvo no Dropbox
 LOG_FILE_PATH = 'log.txt'
 
 chrome_driver_version = '120.0.6099.183'  # Versão compatível com o Chromium 120
-
 # Inicializar o cliente Dropbox
 dbx = dropbox.Dropbox(app_key=APP_KEY, app_secret=APP_SECRET, oauth2_refresh_token=REFRESH_TOKEN)
 
-# Função para inicializar o Selenium WebDriver
-def initialize_webdriver():
-    chrome_options = Options()
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--disable-gpu")
-    chrome_options.add_argument("--no-sandbox")
-    service = Service(ChromeDriverManager(chrome_driver_version).install())  # Removendo o argumento 'version'
-    driver = webdriver.Chrome(service=service, options=chrome_options)
-    return driver
 
-# Função para pegar o conteúdo do elemento
-def get_element_by_xpath(driver, url, xpath):
-    try:
-        driver.get(url)
-        element = driver.find_element(By.XPATH, xpath)
-        return element.text
-    except Exception as e:
-        raise  # Re-levanta a exceção para ser capturada no loop principal
 
-# Função para escrever no arquivo de log
-def write_to_log(content):
-    with open(LOG_FILE_PATH, 'a') as f:
-        f.write(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] {content}\n")
+chrome_options = Options()
+chrome_options.add_argument("--headless")
+chrome_options.add_argument("--disable-gpu")
+chrome_options.add_argument("--no-sandbox")
+service = Service(ChromeDriverManager(chrome_driver_version).install())  # Removendo o argumento 'version'
+driver = webdriver.Chrome(service=service, options=chrome_options)
+
+try:
+    driver.get("https://www.mice.com")
+    texto_capturado = driver.find_element(By.XPATH,'//*[@id="header-slogan"]')
+
+except Exception as e:
+    print(e)
+
+
+with open(LOG_FILE_PATH, 'a') as f:
+    f.write(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] {texto_capturado}\n")
 
 # Função para enviar o arquivo para o Dropbox
 def upload_to_dropbox():
@@ -57,33 +52,22 @@ def upload_to_dropbox():
 # Interface do Streamlit (para entrada de URL e XPath)
 st.title("Streamlit + Selenium: Monitoramento Contínuo")
 
-# Entrada de URL
-url = st.text_input("Digite a URL da página a ser monitorad a:")
+while True:
+    try:
+       try:
+            driver.get("https://www.mice.com")
+            texto_capturado = driver.find_element(By.XPATH,'//*[@id="header-slogan"]')
 
-# Entrada de XPath
-xpath = st.text_input("Digite o XPath do elemento a ser monitorado:")
+       except Exception as e:
+            print(e)
 
-st.info("O script irá coletar o conteúdo do elemento a cada 10 segundos e salvar em log.txt.")
-st.info("O arquivo log.txt será enviado para o Dropbox.")
 
-if url and xpath:
-    st.success("Monitoramento iniciado. Verifique o log.txt local e o Dropbox.")
-
-    driver = initialize_webdriver()  # Inicializa o driver fora do loop
-
-    while True:
-        try:
-            content = get_element_by_xpath(driver, url, xpath)
-            write_to_log(content)
-            print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Conteúdo coletado: {content}")
-
-            # Enviar o arquivo para o Dropbox a cada minuto (opcional, ajuste conforme necessário)
-            if time.time() % 60 < 10:  # Envia nos primeiros 10 segundos de cada minuto
-                upload_to_dropbox()
-
+       with open(LOG_FILE_PATH, 'a') as f:
+            f.write(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] {texto_capturado}\n")
+            upload_to_dropbox()
             time.sleep(10)
 
-        except Exception as e:
+    except Exception as e:
             print(f"Erro durante a execução: {e}")
             if 'invalid session id' in str(e):
                 print("Reinicializando o WebDriver...")
@@ -91,16 +75,6 @@ if url and xpath:
                     driver.quit()  # Tenta fechar o driver antigo
                 except:
                     pass  # Ignora erros ao tentar fechar um driver já inválido
-                driver = initialize_webdriver()  # Inicializa um novo driver
-                print("WebDriver reinicializado.")
-            else:
-                print("Erro não relacionado à sessão, tentando novamente em 10 segundos.")
             time.sleep(10)
 
-    # Certifique-se de fechar o driver ao finalizar (isso pode não ser alcançado em execução contínua no Streamlit)
-    try:
-        driver.quit()
-    except:
-        pass
-else:
-    st.warning("Por favor, insira uma URL e um XPath válidos para iniciar o monitoramento.")
+    
