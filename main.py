@@ -24,13 +24,14 @@ chrome_driver_version = '120.0.6099.183'  # Versão compatível com o Chromium 1
 dbx = dropbox.Dropbox(app_key=APP_KEY, app_secret=APP_SECRET, oauth2_refresh_token=REFRESH_TOKEN)
 
 
-
-chrome_options = Options()
-chrome_options.add_argument("--headless")
-chrome_options.add_argument("--disable-gpu")
-chrome_options.add_argument("--no-sandbox")
-service = Service(ChromeDriverManager(chrome_driver_version).install())  # Removendo o argumento 'version'
-driver = webdriver.Chrome(service=service, options=chrome_options)
+def inicializar_web_driver():
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--disable-gpu")
+    chrome_options.add_argument("--no-sandbox")
+    service = Service(ChromeDriverManager(chrome_driver_version).install())  # Removendo o argumento 'version'
+    driver = webdriver.Chrome(service=service, options=chrome_options)
+    return driver
 
 
 # Função para enviar o arquivo para o Dropbox
@@ -43,21 +44,20 @@ def upload_to_dropbox():
     except Exception as e:
         print(f"Erro ao enviar o arquivo para o Dropbox: {e}")
 
+
+
+driver = inicializar_web_driver()
 # Interface do Streamlit (para entrada de URL e XPath)
 st.title("Streamlit + Selenium: Monitoramento Contínuo")
 
 while True:
     try:
-       try:
             driver.get("https://www.mice.com")
-            texto_capturado = driver.find_element(By.XPATH,'//*[@id="header-slogan"]')
-
-       except Exception as e:
-            print(e)
+            texto_capturado = driver.find_element(By.XPATH,'//*[@id="header-slogan"]').text
 
 
-       with open(LOG_FILE_PATH, 'a') as f:
-            f.write(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] {texto_capturado}\n")
+            with open(LOG_FILE_PATH, 'a') as f:
+                    f.write(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] {texto_capturado}\n")
             upload_to_dropbox()
             time.sleep(10)
 
@@ -68,7 +68,7 @@ while True:
                 try:
                     driver.quit()  # Tenta fechar o driver antigo
                 except:
-                    pass  # Ignora erros ao tentar fechar um driver já inválido
+                   driver = inicializar_web_driver()
             time.sleep(10)
 
     
