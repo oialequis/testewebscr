@@ -68,7 +68,8 @@ while True:
                 try:
                     driver.quit()  # Tenta fechar o driver antigo
                 except:
-                   driver = inicializar_web_driver()
+                     pass
+                driver = inicializar_web_driver()
             time.sleep(10)
 
     
