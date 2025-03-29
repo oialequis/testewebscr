@@ -8,6 +8,7 @@ import dropbox
 import time
 import os
 import sys
+import requests
 
 
 sys.stdout = sys.__stdout__
@@ -19,6 +20,8 @@ APP_SECRET = st.secrets["APP_SECRET"]
 DROPBOX_PATH = '/logs/log.txt'  # Caminho onde o arquivo será salvo no Dropbox
 LOG_FILE_PATH = 'log.txt'
 
+
+
 chrome_driver_version = '120.0.6099.183'  # Versão compatível com o Chromium 120
 # Inicializar o cliente Dropbox
 dbx = dropbox.Dropbox(app_key=APP_KEY, app_secret=APP_SECRET, oauth2_refresh_token=REFRESH_TOKEN)
@@ -29,6 +32,7 @@ def inicializar_web_driver():
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")  # Evita estouro de memória
     service = Service(ChromeDriverManager(chrome_driver_version).install())  # Removendo o argumento 'version'
     driver = webdriver.Chrome(service=service, options=chrome_options)
     return driver
